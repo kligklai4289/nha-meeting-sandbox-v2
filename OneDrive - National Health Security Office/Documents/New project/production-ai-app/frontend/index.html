@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Production AI App</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="topbar">
+      <div>
+        <p class="eyebrow">Internal AI assistant</p>
+        <h1>Production AI App</h1>
+      </div>
+      <div class="status" id="statusBadge">checking...</div>
+    </section>
+
+    <section class="chat-panel">
+      <div class="messages" id="messages" aria-live="polite"></div>
+      <form class="composer" id="chatForm">
+        <textarea id="messageInput" rows="3" placeholder="ถามเรื่องมติประชุม สถานะ ความคืบหน้า หรือถามทั่วไป"></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <section class="sources-panel">
+      <h2>Sources</h2>
+      <div id="sources">ยังไม่มีแหล่งข้อมูล</div>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
+

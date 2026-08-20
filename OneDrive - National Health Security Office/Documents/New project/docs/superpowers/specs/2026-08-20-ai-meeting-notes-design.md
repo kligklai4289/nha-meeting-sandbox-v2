@@ -363,3 +363,10 @@ Deletion Service ต้องทำงานแบบ idempotent มี retry, d
 6. Retrieval chat พร้อมสิทธิ์ระดับรายการ
 7. เว็บผู้ดูแล Audit, DSAR และ incident
 8. Word/PDF export, hardening และการทดสอบ 8 ชั่วโมง
+
+## 19. เอกสารอ้างอิงด้าน PDPA
+
+- พระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 จากรัฐสภา: <https://www.parliament.go.th/view/297/รายละเอียดข่าว/พระราชบัญญัติและประมวลกฎหมาย/13/TH-TH>
+- ศูนย์รวมกฎหมายและประกาศ PDPA ของกรมที่ดิน: <https://www.dol.go.th/pdpa>
+- Government Platform for PDPA Compliance (GPPC): <https://gppc.pdpc.or.th/>
+- การฝึกอบรมระบบ RoPA, Consent, Breach และ DSAR ของ GPPC: <https://gppc.pdpc.or.th/operational-training-for-platform-installation-and-usage/>

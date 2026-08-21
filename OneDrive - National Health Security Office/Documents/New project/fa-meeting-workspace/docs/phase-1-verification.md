@@ -21,9 +21,9 @@ Environment: Windows, Node.js `v24.15.0`, npm `11.12.1`
 
 - Exit code: `0`
 - Command: `vitest run --maxWorkers=2 --testTimeout=15000`
-- Test files: `15 passed (15)`
-- Tests: `30 passed (30)`
-- Vitest duration: `47.09s`
+- Test files: `16 passed (16)`
+- Tests: `35 passed (35)`
+- Vitest duration: `47.38s`
 - Vitest is capped at two workers with a 15-second per-test timeout to avoid resource-contention timeouts on Windows/OneDrive worktrees.
 
 ### `npm run build`
@@ -31,18 +31,18 @@ Environment: Windows, Node.js `v24.15.0`, npm `11.12.1`
 - Exit code: `0`
 - Vite: `v8.2.2`
 - Modules transformed: `1858`
-- Build duration: `2.59s`
+- Build duration: `1.26s`
 - Output:
   - `dist/index.html` — `0.54 kB` (`0.36 kB` gzip)
-  - CSS — `27.19 kB` (`5.89 kB` gzip)
-  - JavaScript — `338.21 kB` (`103.70 kB` gzip)
+  - CSS — `27.67 kB` (`6.00 kB` gzip)
+  - JavaScript — `340.61 kB` (`104.23 kB` gzip)
 
 ### `npm run test:e2e`
 
 - Exit code: `0`
 - Playwright cases discovered: `15`
 - Result: `14 passed`, `1 skipped`
-- Duration: `19.0s`
+- Duration: `18.7s`
 - Projects: desktop `1440×1000`, tablet `900×1100`, mobile `390×844`
 - The one skip is intentional: the one-column assertion applies only to tablet/mobile and skips desktop.
 - Node printed `NO_COLOR`/`FORCE_COLOR` informational warnings; they did not affect exit code or browser assertions.
@@ -50,7 +50,8 @@ Environment: Windows, Node.js `v24.15.0`, npm `11.12.1`
 ## Acceptance audit
 
 - `/fa` reaches an editable `ประเด็น` field after selecting a group (one user click after page load; covered in all three Playwright projects).
-- FA workspace contains no group-switching tab and has no Admin navigation.
+- FA workspace contains no group-switching tab; the public header exposes only a controlled `เข้าสู่ Admin` shortcut, not the full Admin navigation.
+- Mock edits persist across reloads/new tabs in the same browser through versioned `localStorage`, malformed stored JSON falls back safely, and Admin Settings can reset all trial data.
 - The exact six field labels are:
   1. `ประเด็น`
   2. `ข้อค้นพบ / ปัญหา / ข้อจำกัด`

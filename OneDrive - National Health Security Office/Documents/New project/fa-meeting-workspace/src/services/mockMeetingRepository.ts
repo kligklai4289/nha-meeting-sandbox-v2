@@ -4,11 +4,32 @@ import type { Meeting, MeetingWithGroups } from '../domain/meeting'
 import type { MeetingRepository } from './meetingRepository'
 import { createMockSeed, type MockSeed } from './mockSeed'
 
+const STORAGE_KEY = 'fa-meeting-workspace:mock-data:v1'
+
 export class MockMeetingRepository implements MeetingRepository {
   private state: MockSeed
+  private readonly storage?: Storage
 
-  constructor(seed: MockSeed = createMockSeed()) {
+  constructor(
+    seed: MockSeed = createMockSeed(),
+    storage?: Storage,
+  ) {
     this.state = structuredClone(seed)
+    this.storage = storage
+  }
+
+  static fromStorage(storage: Storage): MockMeetingRepository {
+    const stored = storage.getItem(STORAGE_KEY)
+    if (!stored) return new MockMeetingRepository(createMockSeed(), storage)
+    try {
+      return new MockMeetingRepository(JSON.parse(stored) as MockSeed, storage)
+    } catch {
+      return new MockMeetingRepository(createMockSeed(), storage)
+    }
+  }
+
+  private persist(): void {
+    this.storage?.setItem(STORAGE_KEY, JSON.stringify(this.state))
   }
 
   async getActiveMeeting(): Promise<MeetingWithGroups | null> {
@@ -34,6 +55,7 @@ export class MockMeetingRepository implements MeetingRepository {
 
   async saveMeeting(meeting: Meeting): Promise<Meeting> {
     this.state.meeting = structuredClone(meeting)
+    this.persist()
     return structuredClone(meeting)
   }
 
@@ -41,6 +63,7 @@ export class MockMeetingRepository implements MeetingRepository {
     const index = this.state.groups.findIndex((candidate) => candidate.id === group.id)
     if (index >= 0) this.state.groups[index] = structuredClone(group)
     else this.state.groups.push(structuredClone(group))
+    this.persist()
     return structuredClone(group)
   }
 
@@ -49,6 +72,12 @@ export class MockMeetingRepository implements MeetingRepository {
       ...this.state.issues.filter((issue) => issue.groupId !== groupId),
       ...structuredClone(issues),
     ]
+    this.persist()
     return structuredClone(issues)
+  }
+
+  async reset(): Promise<void> {
+    this.state = createMockSeed()
+    this.persist()
   }
 }

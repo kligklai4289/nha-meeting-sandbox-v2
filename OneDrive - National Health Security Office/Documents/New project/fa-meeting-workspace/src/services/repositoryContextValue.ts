@@ -2,6 +2,8 @@ import { createContext } from 'react'
 import type { MeetingRepository } from './meetingRepository'
 import { MockMeetingRepository } from './mockMeetingRepository'
 
-export const RepositoryContext = createContext<MeetingRepository>(
-  new MockMeetingRepository(),
-)
+const defaultRepository = typeof window === 'undefined'
+  ? new MockMeetingRepository()
+  : MockMeetingRepository.fromStorage(window.localStorage)
+
+export const RepositoryContext = createContext<MeetingRepository>(defaultRepository)

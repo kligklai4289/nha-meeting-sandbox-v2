@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
+import { Link, Outlet } from 'react-router-dom'
 
 export function PublicLayout() {
   return (
@@ -14,6 +15,13 @@ export function PublicLayout() {
             </h1>
             <p className="text-xs text-slate-500">สำนักงานหลักประกันสุขภาพแห่งชาติ</p>
           </div>
+          <Link
+            to="/admin/login"
+            className="ml-auto inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+          >
+            <ShieldCheck aria-hidden="true" size={18} />
+            เข้าสู่ Admin
+          </Link>
         </div>
       </header>
       <Outlet />

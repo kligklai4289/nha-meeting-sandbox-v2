@@ -51,12 +51,13 @@ Admin:
 ## ข้อจำกัดของ Phase 1
 
 - Admin authentication เป็น mock session และไม่ใช่ Supabase Auth
-- Repository เก็บข้อมูลในหน่วยความจำ การ reload จะกลับไปใช้ seed data
+- Repository เก็บ snapshot แบบ mock ใน `localStorage` จึงอยู่ต่อหลัง reload และเปิดแท็บใหม่ในเบราว์เซอร์เดียวกัน แต่ไม่แชร์ข้ามเครื่อง
+- Admin Settings มีปุ่ม `ล้างข้อมูลทดลอง` เพื่อคืนค่า seed data ทั้งหมด
 - Autosave เป็นการจำลองสถานะ ไม่มี offline queue หรือ concurrency control
 - ไม่มี Supabase Database, RLS, Realtime หรือ Presence
 - ปุ่ม Excel/PowerPoint แสดง feedback เท่านั้น ยังไม่สร้างไฟล์จริง
 - ไม่มี service-role key หรือ secret ใดฝังใน frontend
-- ยังไม่ได้ deploy ไป Vercel
+- รองรับ Vercel SPA routing และมีโปรเจกต์ Preview สำหรับทดลอง โดยใช้ Deployment Protection
 
 ## Milestone ถัดไป
 

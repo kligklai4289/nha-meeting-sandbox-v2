@@ -10,4 +10,5 @@ export interface MeetingRepository {
   saveMeeting(meeting: Meeting): Promise<Meeting>
   saveGroup(group: MeetingGroup): Promise<MeetingGroup>
   saveIssues(groupId: string, issues: Issue[]): Promise<Issue[]>
+  reset(): Promise<void>
 }

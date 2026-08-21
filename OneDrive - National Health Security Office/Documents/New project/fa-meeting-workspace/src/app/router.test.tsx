@@ -28,5 +28,8 @@ describe('application routes', () => {
     expect(
       screen.queryByRole('link', { name: 'Admin Dashboard' }),
     ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'เข้าสู่ Admin' }),
+    ).toHaveAttribute('href', '/admin/login')
   })
 })

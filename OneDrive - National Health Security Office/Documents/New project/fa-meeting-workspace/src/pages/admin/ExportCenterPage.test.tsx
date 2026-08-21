@@ -51,4 +51,24 @@ describe('Export Center and Settings', () => {
 
     expect((await repository.getActiveMeeting())?.title).toBe('รอบประชุมฉบับปรับปรุง')
   })
+
+  it('confirms before resetting all trial data and refreshes the settings form', async () => {
+    const user = userEvent.setup()
+    const repository = renderAdminAt('/admin/settings')
+    const title = await screen.findByLabelText('ชื่อรอบประชุม')
+    await user.clear(title)
+    await user.type(title, 'ข้อมูลทดลองที่ต้องล้าง')
+    await user.click(screen.getByRole('button', { name: 'บันทึกรอบประชุม' }))
+
+    await user.click(screen.getByRole('button', { name: 'ล้างข้อมูลทดลอง' }))
+    expect(screen.getByRole('dialog', { name: 'ล้างข้อมูลทดลองทั้งหมด?' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'ยืนยันล้างข้อมูล' }))
+
+    expect(await screen.findByLabelText('ชื่อรอบประชุม')).toHaveValue(
+      'แผนการดำเนินงาน ทิศทางการทำงานร่วมกันของอนุกรรมการ ปีงบประมาณ 2570',
+    )
+    expect((await repository.getActiveMeeting())?.title).toBe(
+      'แผนการดำเนินงาน ทิศทางการทำงานร่วมกันของอนุกรรมการ ปีงบประมาณ 2570',
+    )
+  })
 })

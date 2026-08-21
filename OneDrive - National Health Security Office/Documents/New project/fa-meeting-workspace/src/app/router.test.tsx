@@ -32,4 +32,13 @@ describe('application routes', () => {
       screen.getByRole('link', { name: 'เข้าสู่ Admin' }),
     ).toHaveAttribute('href', '/admin/login')
   })
+
+  it('lets an administrator return to the FA data-entry page', async () => {
+    sessionStorage.setItem('admin:mock-session', 'true')
+    renderAppAt('/admin/dashboard')
+
+    expect(
+      await screen.findByRole('link', { name: 'กลับไปหน้าบันทึกข้อมูล' }),
+    ).toHaveAttribute('href', '/fa')
+  })
 })

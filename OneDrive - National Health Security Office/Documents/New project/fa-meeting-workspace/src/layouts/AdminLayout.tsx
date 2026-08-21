@@ -1,5 +1,5 @@
-import { BarChart3, CalendarDays, FileDown, Settings } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { ArrowLeft, BarChart3, CalendarDays, FileDown, Settings } from 'lucide-react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { cn } from '../utils/cn'
 
 const links = [
@@ -34,6 +34,13 @@ export function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+        <Link
+          to="/fa"
+          className="mt-4 flex min-h-11 items-center gap-3 rounded-xl border border-blue-300/40 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+        >
+          <ArrowLeft size={18} aria-hidden="true" />
+          กลับไปหน้าบันทึกข้อมูล
+        </Link>
       </aside>
       <Outlet />
     </div>

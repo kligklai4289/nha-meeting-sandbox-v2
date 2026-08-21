@@ -22,8 +22,8 @@ Environment: Windows, Node.js `v24.15.0`, npm `11.12.1`
 - Exit code: `0`
 - Command: `vitest run --maxWorkers=2 --testTimeout=15000`
 - Test files: `16 passed (16)`
-- Tests: `35 passed (35)`
-- Vitest duration: `47.38s`
+- Tests: `36 passed (36)`
+- Vitest duration: `38.46s`
 - Vitest is capped at two workers with a 15-second per-test timeout to avoid resource-contention timeouts on Windows/OneDrive worktrees.
 
 ### `npm run build`
@@ -31,18 +31,18 @@ Environment: Windows, Node.js `v24.15.0`, npm `11.12.1`
 - Exit code: `0`
 - Vite: `v8.2.2`
 - Modules transformed: `1858`
-- Build duration: `1.26s`
+- Build duration: `3.44s`
 - Output:
   - `dist/index.html` — `0.54 kB` (`0.36 kB` gzip)
-  - CSS — `27.67 kB` (`6.00 kB` gzip)
-  - JavaScript — `340.61 kB` (`104.23 kB` gzip)
+  - CSS — `27.86 kB` (`6.03 kB` gzip)
+  - JavaScript — `340.92 kB` (`104.26 kB` gzip)
 
 ### `npm run test:e2e`
 
 - Exit code: `0`
 - Playwright cases discovered: `15`
 - Result: `14 passed`, `1 skipped`
-- Duration: `18.7s`
+- Duration: `18.4s`
 - Projects: desktop `1440×1000`, tablet `900×1100`, mobile `390×844`
 - The one skip is intentional: the one-column assertion applies only to tablet/mobile and skips desktop.
 - Node printed `NO_COLOR`/`FORCE_COLOR` informational warnings; they did not affect exit code or browser assertions.

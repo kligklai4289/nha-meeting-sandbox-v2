@@ -16,14 +16,8 @@ import { AdminGroupDetailPage } from '../pages/admin/AdminGroupDetailPage'
 import { AdminLoginPage } from '../pages/admin/AdminLoginPage'
 import { AdminMeetingDetailPage } from '../pages/admin/AdminMeetingDetailPage'
 import { AdminMeetingsPage } from '../pages/admin/AdminMeetingsPage'
-
-function routePage(title: string) {
-  return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h2 className="text-2xl font-bold text-slate-950">{title}</h2>
-    </main>
-  )
-}
+import { AdminSettingsPage } from '../pages/admin/AdminSettingsPage'
+import { ExportCenterPage } from '../pages/admin/ExportCenterPage'
 
 const routes: RouteObject[] = [
   { path: '/', element: <Navigate to="/fa" replace /> },
@@ -48,8 +42,8 @@ const routes: RouteObject[] = [
           { path: 'meetings', element: <AdminMeetingsPage /> },
           { path: 'meetings/:meetingId', element: <AdminMeetingDetailPage /> },
           { path: 'groups/:groupId', element: <AdminGroupDetailPage /> },
-          { path: 'export', element: routePage('Export Center') },
-          { path: 'settings', element: routePage('ตั้งค่าระบบ') },
+          { path: 'export', element: <ExportCenterPage /> },
+          { path: 'settings', element: <AdminSettingsPage /> },
         ],
       },
     ],

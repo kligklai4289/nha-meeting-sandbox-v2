@@ -5,11 +5,17 @@ import {
   type RouteObject,
 } from 'react-router-dom'
 import { AdminLayout } from '../layouts/AdminLayout'
+import { RequireAdminSession } from '../components/admin/RequireAdminSession'
 import { PublicLayout } from '../layouts/PublicLayout'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { FASelectGroupPage } from '../pages/fa/FASelectGroupPage'
 import { FAWorkspacePage } from '../pages/fa/FAWorkspacePage'
 import { PreviewPage } from '../pages/preview/PreviewPage'
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
+import { AdminGroupDetailPage } from '../pages/admin/AdminGroupDetailPage'
+import { AdminLoginPage } from '../pages/admin/AdminLoginPage'
+import { AdminMeetingDetailPage } from '../pages/admin/AdminMeetingDetailPage'
+import { AdminMeetingsPage } from '../pages/admin/AdminMeetingsPage'
 
 function routePage(title: string) {
   return (
@@ -29,18 +35,23 @@ const routes: RouteObject[] = [
       { path: '/preview', element: <PreviewPage /> },
     ],
   },
-  { path: '/admin/login', element: routePage('เข้าสู่ระบบผู้ดูแล') },
+  { path: '/admin/login', element: <AdminLoginPage /> },
   {
-    path: '/admin',
-    element: <AdminLayout />,
+    element: <RequireAdminSession />,
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: routePage('Admin Dashboard') },
-      { path: 'meetings', element: routePage('จัดการรอบประชุม') },
-      { path: 'meetings/:meetingId', element: routePage('รายละเอียดรอบประชุม') },
-      { path: 'groups/:groupId', element: routePage('รายละเอียดกลุ่ม') },
-      { path: 'export', element: routePage('Export Center') },
-      { path: 'settings', element: routePage('ตั้งค่าระบบ') },
+      {
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', element: <AdminDashboardPage /> },
+          { path: 'meetings', element: <AdminMeetingsPage /> },
+          { path: 'meetings/:meetingId', element: <AdminMeetingDetailPage /> },
+          { path: 'groups/:groupId', element: <AdminGroupDetailPage /> },
+          { path: 'export', element: routePage('Export Center') },
+          { path: 'settings', element: routePage('ตั้งค่าระบบ') },
+        ],
+      },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

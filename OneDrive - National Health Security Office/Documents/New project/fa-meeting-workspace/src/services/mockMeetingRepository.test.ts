@@ -24,4 +24,14 @@ describe('MockMeetingRepository', () => {
 
     expect(second?.groups[0].presenter).toBe('')
   })
+
+  it('saves meeting edits for subsequent reads', async () => {
+    const repository = new MockMeetingRepository()
+    const meeting = await repository.getActiveMeeting()
+    if (!meeting) throw new Error('Expected an active meeting fixture')
+
+    await repository.saveMeeting({ ...meeting, title: 'รอบประชุมที่แก้ไข' })
+
+    expect((await repository.getActiveMeeting())?.title).toBe('รอบประชุมที่แก้ไข')
+  })
 })

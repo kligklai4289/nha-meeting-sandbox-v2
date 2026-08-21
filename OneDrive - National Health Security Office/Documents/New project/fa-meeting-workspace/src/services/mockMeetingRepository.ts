@@ -1,6 +1,6 @@
 import type { MeetingGroup } from '../domain/group'
 import type { Issue } from '../domain/issue'
-import type { MeetingWithGroups } from '../domain/meeting'
+import type { Meeting, MeetingWithGroups } from '../domain/meeting'
 import type { MeetingRepository } from './meetingRepository'
 import { createMockSeed, type MockSeed } from './mockSeed'
 
@@ -30,6 +30,11 @@ export class MockMeetingRepository implements MeetingRepository {
         .filter((issue) => issue.groupId === groupId)
         .sort((left, right) => left.sortOrder - right.sortOrder),
     )
+  }
+
+  async saveMeeting(meeting: Meeting): Promise<Meeting> {
+    this.state.meeting = structuredClone(meeting)
+    return structuredClone(meeting)
   }
 
   async saveGroup(group: MeetingGroup): Promise<MeetingGroup> {

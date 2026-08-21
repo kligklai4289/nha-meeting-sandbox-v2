@@ -4,7 +4,7 @@
 
 **Goal:** Create the tested staging/production Supabase foundation, shared database schema, environment contracts, and Vercel API health boundary without yet replacing the application’s mock repository.
 
-**Architecture:** One migration history is applied first to a Singapore staging project and then, only after approval, to a separate Singapore production project. Browser configuration exposes only the Supabase URL and anon key; service-role access is validated only inside Vercel Functions. The existing React UI remains on the mock repository during this infrastructure plan so the database foundation can be reviewed independently.
+**Architecture:** One migration history is applied first to a Singapore staging project and then, only after approval, to a separate Singapore production project. Browser configuration exposes only the Supabase URL and publishable key; secret-key access is validated only inside Vercel Functions. The existing React UI remains on the mock repository during this infrastructure plan so the database foundation can be reviewed independently.
 
 **Tech Stack:** React 19, TypeScript 6, Vite 8, Vercel Functions, Supabase PostgreSQL/Auth/Realtime, Zod, Vitest, Supabase CLI
 
@@ -65,8 +65,8 @@
 **Interfaces:**
 - Produces: `parsePublicEnv(input: Record<string, unknown>): PublicEnv`
 - Produces: `parseServerEnv(input: NodeJS.ProcessEnv): ServerEnv`
-- `PublicEnv` contains `VITE_SUPABASE_URL: string` and `VITE_SUPABASE_ANON_KEY: string`.
-- `ServerEnv` contains `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FA_SESSION_SIGNING_SECRET`, and `FA_CODE_PEPPER` as non-empty strings, with the first value validated as a URL.
+- `PublicEnv` contains `VITE_SUPABASE_URL: string` and `VITE_SUPABASE_PUBLISHABLE_KEY: string`.
+- `ServerEnv` contains `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `FA_SESSION_SIGNING_SECRET`, and `FA_CODE_PEPPER` as non-empty strings, with the first value validated as a URL.
 
 - [ ] **Step 1: Add the public environment failing tests**
 
@@ -78,14 +78,14 @@ describe('parsePublicEnv', () => {
   it('accepts only the browser-safe Supabase settings', () => {
     expect(parsePublicEnv({
       VITE_SUPABASE_URL: 'https://example.supabase.co',
-      VITE_SUPABASE_ANON_KEY: 'anon-key',
+      VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
     })).toEqual({
       VITE_SUPABASE_URL: 'https://example.supabase.co',
-      VITE_SUPABASE_ANON_KEY: 'anon-key',
+      VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
     })
   })
 
-  it('rejects a missing anon key', () => {
+  it('rejects a missing publishable key', () => {
     expect(() => parsePublicEnv({
       VITE_SUPABASE_URL: 'https://example.supabase.co',
     })).toThrow('Invalid public environment configuration')
@@ -108,7 +108,7 @@ import { z } from 'zod'
 
 const publicEnvSchema = z.object({
   VITE_SUPABASE_URL: z.url(),
-  VITE_SUPABASE_ANON_KEY: z.string().min(1),
+  VITE_SUPABASE_PUBLISHABLE_KEY: z.string().startsWith('sb_publishable_'),
 }).strip()
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>
@@ -133,7 +133,7 @@ import { parseServerEnv } from './serverEnv'
 
 const valid = {
   SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_SERVICE_ROLE_KEY: 'service-role-value',
+  SUPABASE_SECRET_KEY: 'sb_secret_test-value',
   FA_SESSION_SIGNING_SECRET: 'a'.repeat(32),
   FA_CODE_PEPPER: 'b'.repeat(32),
 }
@@ -147,7 +147,7 @@ describe('parseServerEnv', () => {
     expect(() => parseServerEnv({ ...valid, FA_CODE_PEPPER: '' }))
       .toThrow('Invalid server environment configuration: FA_CODE_PEPPER')
     try { parseServerEnv({ ...valid, FA_CODE_PEPPER: '' }) } catch (error) {
-      expect(String(error)).not.toContain('service-role-value')
+      expect(String(error)).not.toContain('sb_secret_test-value')
     }
   })
 })
@@ -165,7 +165,7 @@ import { z } from 'zod'
 
 const serverEnvSchema = z.object({
   SUPABASE_URL: z.url(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  SUPABASE_SECRET_KEY: z.string().startsWith('sb_secret_'),
   FA_SESSION_SIGNING_SECRET: z.string().min(32),
   FA_CODE_PEPPER: z.string().min(32),
 })
@@ -213,7 +213,7 @@ git commit -m "feat: define production environment contracts"
 - Produces tables: `public.meetings`, `public.meeting_groups`, `public.issues`, `public.fa_access_codes`, `public.fa_sessions`, `public.admin_profiles`, `public.audit_logs`, `public.mutation_receipts`.
 - Produces enums: `public.meeting_status`, `public.group_status`, `public.admin_role`, `public.actor_type`.
 - Produces trigger function: `public.set_updated_at_and_version()`.
-- Produces authorization helper: `public.is_active_admin()` using `security definer`, `stable`, and fixed `search_path`.
+- Produces authorization helper: `private.is_active_admin()` using `security definer`, `stable`, and fixed `search_path`.
 
 - [ ] **Step 1: Initialize local Supabase files**
 
@@ -275,7 +275,7 @@ Enforce `(meeting_id, group_no)` uniqueness and `(meeting_id, group_id, position
 
 `set_updated_at_and_version()` sets `updated_at = now()` and increments `row_version` only when an existing row changes. Apply it to `meetings`, `meeting_groups`, and `issues`. Add indexes for active meeting lookup, groups by meeting, active issues by group/position, active access code by group, live FA sessions by group, and audit logs by meeting/time.
 
-Implement `is_active_admin()` as a `stable security definer` SQL function with `set search_path = ''` and an explicit `public.admin_profiles.user_id = auth.uid()` / `is_active = true` predicate. Revoke function execution from `public` and `anon`; grant it to `authenticated`.
+Create a non-exposed `private` schema and implement `private.is_active_admin()` as a `stable security definer` SQL function with `set search_path = ''` and an explicit `public.admin_profiles.user_id = (select auth.uid())` / `is_active = true` predicate. Revoke all schema access from `public` and `anon`; grant `authenticated` only schema usage and function execution. The function body performs no mutation and accepts no caller-supplied user ID.
 
 - [ ] **Step 6: Enable RLS, revoke anonymous writes, and add Admin policies**
 
@@ -402,7 +402,7 @@ expect(result.body).toEqual({
 })
 ```
 
-For missing server configuration assert status 503, code `SERVER_NOT_CONFIGURED`, and `JSON.stringify(body)` does not contain any supplied service-role value.
+For missing server configuration assert status 503, code `SERVER_NOT_CONFIGURED`, and `JSON.stringify(body)` does not contain any supplied secret-key value.
 
 - [ ] **Step 2: Run the handler test and verify RED**
 
@@ -444,11 +444,11 @@ git commit -m "feat: add the Vercel API health boundary"
 
 **Interfaces:**
 - Produces npm script `verify:environment`.
-- `verify-environment.mjs` exits 0 only when committed files contain no service-role/JWT/FA secret values, both seed variants exist, the migration exists, and `.env.example` contains all six expected names.
+- `verify-environment.mjs` exits 0 only when committed files contain no Supabase secret-key/JWT/FA secret values, both seed variants exist, the migration exists, and `.env.example` contains all six expected names.
 
 - [ ] **Step 1: Write the executable verification fixture test**
 
-Create temporary fixture directories in the test, run the script through Node, and assert a clean fixture exits 0 while a fixture containing `SUPABASE_SERVICE_ROLE_KEY=eyJ...` exits non-zero with `Potential server secret found`. The assertion must inspect process exit/output, not source text.
+Create temporary fixture directories in the test, run the script through Node, and assert a clean fixture exits 0 while a fixture containing `SUPABASE_SECRET_KEY=sb_secret_leaked-value` exits non-zero with `Potential server secret found`. The assertion must inspect process exit/output, not source text.
 
 - [ ] **Step 2: Run the verification test and verify RED**
 
@@ -506,7 +506,7 @@ State the project name, region, organization, and that project creation may cons
 
 - [ ] **Step 2: Create Staging and record identifiers safely**
 
-Create the project through the connected Supabase account. Store project reference and API URL in ignored local metadata; store generated database credentials only in the platform secret store. Do not print service-role keys into chat, logs, or committed files.
+Create the project through the connected Supabase account. Store project reference and API URL in ignored local metadata; store generated database credentials only in the platform secret store. Do not print Supabase secret keys into chat, logs, or committed files.
 
 - [ ] **Step 3: Apply and test Staging**
 
@@ -518,7 +518,7 @@ Generate independent random values of at least 32 bytes for `FA_SESSION_SIGNING_
 
 - [ ] **Step 5: Configure and deploy Vercel Preview**
 
-Set Preview `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FA_SESSION_SIGNING_SECRET`, and `FA_CODE_PEPPER`; deploy Preview; call `/api/health` and assert HTTP 200 with `status: ok` and no secret-shaped fields.
+Set Preview `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `FA_SESSION_SIGNING_SECRET`, and `FA_CODE_PEPPER`; deploy Preview; call `/api/health` and assert HTTP 200 with `status: ok` and no secret-shaped fields.
 
 - [ ] **Step 6: Run the complete local quality gate**
 

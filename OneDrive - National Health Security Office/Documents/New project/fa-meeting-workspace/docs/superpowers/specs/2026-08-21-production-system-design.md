@@ -29,12 +29,12 @@ Vercel Preview เชื่อมกับ Staging และ Vercel Production �
 Frontend ใช้เฉพาะตัวแปรที่เปิดเผยได้:
 
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
 
 Vercel Server ใช้ Secret ต่อ Environment เช่น:
 
 - `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_SECRET_KEY`
 - `FA_SESSION_SIGNING_SECRET`
 - `FA_CODE_PEPPER`
 
@@ -214,4 +214,3 @@ Mock repository คงไว้เฉพาะ Automated tests และ Story/F
 6. Security + Verification — Security tests, concurrency/E2E, runbook และ Production promotion
 
 แต่ละส่วนต้องมี Test-first implementation, หลักฐานคำสั่งตรวจคุณภาพ และสรุปสิ่งที่เปลี่ยนก่อนขออนุมัติไปส่วนถัดไป
-

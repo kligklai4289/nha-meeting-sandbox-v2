@@ -71,11 +71,11 @@ export function IssueCard({
           className="mt-2 min-h-11 w-full rounded-xl border border-slate-300 px-3 py-2 font-normal outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
         />
       </label>
-      <div className="mt-5 grid gap-5 md:grid-cols-2">
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
         {longFields.map((field) => (
           <label
             key={field}
-            className={`text-sm font-bold text-slate-800 ${field === 'stakeholderRoles' ? 'md:col-span-2' : ''}`}
+            className={`text-sm font-bold text-slate-800 ${field === 'stakeholderRoles' ? 'lg:col-span-2' : ''}`}
           >
             {issueFieldLabels[field]}
             <textarea

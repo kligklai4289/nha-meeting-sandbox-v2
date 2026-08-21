@@ -1,7 +1,9 @@
-import { CheckCircle2, Clock3, Layers3, ListChecks } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Clock3, FileSpreadsheet, Layers3, ListChecks, Presentation } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { GroupStatusTable } from '../../components/admin/GroupStatusTable'
 import { StatCard } from '../../components/admin/StatCard'
+import { Button } from '../../components/common/Button'
 import type { MeetingGroup } from '../../domain/group'
 import type { Issue } from '../../domain/issue'
 import { buildDashboardStats } from '../../features/admin/buildDashboardStats'
@@ -16,6 +18,7 @@ interface DashboardData {
 export function AdminDashboardPage() {
   const repository = useMeetingRepository()
   const [data, setData] = useState<DashboardData>()
+  const [exportFeedback, setExportFeedback] = useState<string | null>(null)
   useEffect(() => {
     let active = true
     repository.getActiveMeeting().then(async (meeting) => {
@@ -42,6 +45,47 @@ export function AdminDashboardPage() {
         <StatCard label="Final แล้ว" value={stats.finalizedGroups} icon={CheckCircle2} />
         <StatCard label="บันทึกล่าสุด" value={stats.latestSavedAt ? `${formatBangkokTime(stats.latestSavedAt)} น.` : '—'} icon={Clock3} />
       </div>
+      <section className="mt-8 overflow-hidden rounded-2xl bg-government-navy text-white shadow-sm">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <p className="text-sm font-bold text-blue-200">ส่งออกรายงาน — โหมดทดลอง</p>
+            <h2 className="mt-1 text-xl font-black">สรุปข้อมูลทั้ง {stats.totalGroups} กลุ่ม</h2>
+            <p className="mt-2 max-w-2xl text-sm text-blue-100">
+              ปุ่มนี้ใช้สาธิตขั้นตอนการ Export เท่านั้น และยังไม่สร้างไฟล์ดาวน์โหลดจริง
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => setExportFeedback('โหมดทดลอง: ยังไม่มีไฟล์ Excel ให้ดาวน์โหลด')}
+            >
+              <FileSpreadsheet aria-hidden="true" size={18} />
+              ทดลอง Export Excel
+            </Button>
+            <Button
+              variant="success"
+              onClick={() => setExportFeedback('โหมดทดลอง: ยังไม่มีไฟล์ PowerPoint ให้ดาวน์โหลด')}
+            >
+              <Presentation aria-hidden="true" size={18} />
+              ทดลอง Export PowerPoint
+            </Button>
+          </div>
+        </div>
+        <div className="border-t border-white/15 bg-black/10 px-6 py-4">
+          {exportFeedback && (
+            <p role="status" className="mb-3 rounded-xl bg-white/10 px-4 py-3 text-sm font-bold text-blue-50">
+              {exportFeedback}
+            </p>
+          )}
+          <Link
+            to="/admin/export"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white underline decoration-blue-300 underline-offset-4"
+          >
+            ดูตัวเลือก Export รายกลุ่ม
+            <ArrowRight aria-hidden="true" size={17} />
+          </Link>
+        </div>
+      </section>
       <h2 className="mb-3 mt-8 text-xl font-black text-slate-950">สถานะรายกลุ่ม</h2>
       <GroupStatusTable groups={data.groups} issuesByGroup={data.issuesByGroup} />
     </main>

@@ -44,4 +44,25 @@ describe('Admin workflow', () => {
     ).toBeInTheDocument()
     expect((await repository.getGroup('10000000-0000-4000-8000-000000000002'))?.status).toBe('draft')
   })
+
+  it('offers mock export actions from the Dashboard without claiming a download', async () => {
+    const user = userEvent.setup()
+    sessionStorage.setItem('admin:mock-session', 'true')
+    renderAppAt('/admin/dashboard', new MockMeetingRepository())
+
+    await user.click(await screen.findByRole('button', { name: 'ทดลอง Export Excel' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'โหมดทดลอง: ยังไม่มีไฟล์ Excel ให้ดาวน์โหลด',
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'ทดลอง Export PowerPoint' }),
+    )
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'โหมดทดลอง: ยังไม่มีไฟล์ PowerPoint ให้ดาวน์โหลด',
+    )
+    expect(
+      screen.getByRole('link', { name: 'ดูตัวเลือก Export รายกลุ่ม' }),
+    ).toHaveAttribute('href', '/admin/export')
+  })
 })

@@ -12,6 +12,7 @@ interface IssueListProps {
   onMoveUp: (issueId: string) => void
   onMoveDown: (issueId: string) => void
   onDelete: (issueId: string) => void
+  disabled?: boolean
 }
 
 export function IssueList(props: IssueListProps) {
@@ -27,6 +28,7 @@ export function IssueList(props: IssueListProps) {
           onMoveUp={props.onMoveUp}
           onMoveDown={props.onMoveDown}
           onDelete={props.onDelete}
+          disabled={props.disabled}
         />
       ))}
     </div>

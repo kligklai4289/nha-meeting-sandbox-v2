@@ -1,13 +1,16 @@
-import { ArrowLeft, Cloud } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { MeetingGroup } from '../../domain/group'
+import { AutoSaveStatus } from './AutoSaveStatus'
 
 interface FAHeaderProps {
   group: MeetingGroup
   onBack: () => void
+  autoSaveState: 'idle' | 'saving' | 'saved' | 'error'
+  savedAt: string | null
 }
 
-export function FAHeader({ group, onBack }: FAHeaderProps) {
+export function FAHeader({ group, onBack, autoSaveState, savedAt }: FAHeaderProps) {
   return (
     <header className="rounded-2xl bg-government-navy p-5 text-white shadow-lg sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -26,8 +29,7 @@ export function FAHeader({ group, onBack }: FAHeaderProps) {
           </h2>
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-bold text-blue-50">
-          <Cloud aria-hidden="true" size={16} />
-          พร้อมบันทึกอัตโนมัติ
+          <AutoSaveStatus state={autoSaveState} savedAt={savedAt} />
         </div>
       </div>
       <p className="mt-4 max-w-5xl text-sm leading-6 text-blue-100">

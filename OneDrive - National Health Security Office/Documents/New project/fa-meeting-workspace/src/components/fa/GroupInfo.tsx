@@ -7,15 +7,17 @@ interface GroupInfoProps {
   group: MeetingGroup
   issueCount: number
   onChange: (group: MeetingGroup) => void
+  disabled?: boolean
 }
 
-export function GroupInfo({ group, issueCount, onChange }: GroupInfoProps) {
+export function GroupInfo({ group, issueCount, onChange, disabled = false }: GroupInfoProps) {
   return (
     <section className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2">
       <label className="text-sm font-bold text-slate-800">
         ผู้นำเสนอ
         <input
           aria-label="ผู้นำเสนอ"
+          disabled={disabled}
           value={group.presenter}
           onChange={(event) => onChange({ ...group, presenter: event.target.value })}
           placeholder="กรอกชื่อผู้นำเสนอ"
@@ -26,6 +28,7 @@ export function GroupInfo({ group, issueCount, onChange }: GroupInfoProps) {
         สถานะกลุ่ม
         <select
           aria-label="สถานะกลุ่ม"
+          disabled={disabled}
           value={group.status}
           onChange={(event) =>
             onChange({ ...group, status: event.target.value as GroupStatus })

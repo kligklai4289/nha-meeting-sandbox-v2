@@ -16,6 +16,7 @@ interface IssueCardProps {
   onMoveUp: (issueId: string) => void
   onMoveDown: (issueId: string) => void
   onDelete: (issueId: string) => void
+  disabled?: boolean
 }
 
 const longFields: EditableField[] = [
@@ -34,6 +35,7 @@ export function IssueCard({
   onMoveUp,
   onMoveDown,
   onDelete,
+  disabled = false,
 }: IssueCardProps) {
   const titleId = `issue-title-${issue.id}`
   return (
@@ -47,13 +49,13 @@ export function IssueCard({
           ประเด็นที่ {issue.sortOrder}
         </h3>
         <div className="flex gap-2">
-          <Button variant="ghost" aria-label="เลื่อนประเด็นขึ้น" disabled={isFirst} onClick={() => onMoveUp(issue.id)}>
+          <Button variant="ghost" aria-label="เลื่อนประเด็นขึ้น" disabled={disabled || isFirst} onClick={() => onMoveUp(issue.id)}>
             <ArrowUp aria-hidden="true" size={17} />
           </Button>
-          <Button variant="ghost" aria-label="เลื่อนประเด็นลง" disabled={isLast} onClick={() => onMoveDown(issue.id)}>
+          <Button variant="ghost" aria-label="เลื่อนประเด็นลง" disabled={disabled || isLast} onClick={() => onMoveDown(issue.id)}>
             <ArrowDown aria-hidden="true" size={17} />
           </Button>
-          <Button variant="ghost" aria-label="ลบประเด็น" onClick={() => onDelete(issue.id)}>
+          <Button variant="ghost" aria-label="ลบประเด็น" disabled={disabled} onClick={() => onDelete(issue.id)}>
             <Trash2 aria-hidden="true" size={17} className="text-red-600" />
           </Button>
         </div>
@@ -62,6 +64,7 @@ export function IssueCard({
         {issueFieldLabels.topic}
         <input
           aria-label={issueFieldLabels.topic}
+          disabled={disabled}
           value={issue.topic}
           onChange={(event) => onUpdate(issue.id, 'topic', event.target.value)}
           placeholder="ระบุประเด็น"
@@ -77,6 +80,7 @@ export function IssueCard({
             {issueFieldLabels[field]}
             <textarea
               aria-label={issueFieldLabels[field]}
+              disabled={disabled}
               value={issue[field]}
               onChange={(event) => onUpdate(issue.id, field, event.target.value)}
               rows={field === 'stakeholderRoles' ? 4 : 5}

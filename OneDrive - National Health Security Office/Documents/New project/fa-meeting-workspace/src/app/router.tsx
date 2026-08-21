@@ -8,6 +8,7 @@ import { AdminLayout } from '../layouts/AdminLayout'
 import { PublicLayout } from '../layouts/PublicLayout'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { FASelectGroupPage } from '../pages/fa/FASelectGroupPage'
+import { FAWorkspacePage } from '../pages/fa/FAWorkspacePage'
 
 function routePage(title: string) {
   return (
@@ -23,7 +24,7 @@ const routes: RouteObject[] = [
     element: <PublicLayout />,
     children: [
       { path: '/fa', element: <FASelectGroupPage /> },
-      { path: '/fa/workspace', element: routePage('FA Workspace') },
+      { path: '/fa/workspace', element: <FAWorkspacePage /> },
       { path: '/preview', element: routePage('ตัวอย่างสรุป') },
     ],
   },

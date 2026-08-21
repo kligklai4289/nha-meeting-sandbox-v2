@@ -14,10 +14,16 @@ describe('application routes', () => {
   })
 
   it('keeps Admin navigation out of the FA workspace', async () => {
+    sessionStorage.setItem(
+      'fa:selected-group-id',
+      '10000000-0000-4000-8000-000000000001',
+    )
     renderAppAt('/fa/workspace')
 
     expect(
-      await screen.findByRole('heading', { name: 'FA Workspace' }),
+      await screen.findByRole('heading', {
+        name: 'กลุ่ม 1 บริหารกองทุน เหมาจ่าย',
+      }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'Admin Dashboard' }),

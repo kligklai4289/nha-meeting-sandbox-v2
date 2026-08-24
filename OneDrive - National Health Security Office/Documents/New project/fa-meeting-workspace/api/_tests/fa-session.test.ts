@@ -15,6 +15,23 @@ const claims: FaSessionClaims = {
 }
 
 const signingSecret = 'session-signing-secret-for-tests-1234567890'
+const workspace = {
+  meeting: {
+    id: claims.meetingId,
+    title: 'การประชุม',
+    fiscalYear: '2570',
+    meetingDate: '2026-08-27',
+    startTime: '09:00',
+    endTime: '16:30',
+    location: 'อยุธยา',
+    status: 'active',
+    isActive: true,
+    createdAt: '2026-08-27T01:00:00.000Z',
+    updatedAt: '2026-08-27T01:00:00.000Z',
+  },
+  group: { id: claims.groupId },
+  issues: [],
+}
 
 function post(body: unknown): Request {
   return new Request('https://meeting.example/api/fa/session', {
@@ -82,6 +99,46 @@ describe('POST /api/fa/session', () => {
       requestId: 'fa-session-request',
     })
     expect(JSON.stringify(body)).not.toContain(claims.sessionId)
+  })
+
+  it('returns initial workspace data with the session without exposing the session id', async () => {
+    const gateway = {
+      exchangeAccessCode: vi.fn().mockResolvedValue(claims),
+      getBootstrap: vi.fn().mockResolvedValue(workspace),
+    }
+    const handler = createFaSessionHandler(gateway, signingSecret)
+
+    const response = await handler.fetch(post({
+      groupId: claims.groupId,
+      accessCode: '1550',
+    }))
+    const body = await response.json() as { data: { workspace?: unknown } }
+
+    expect(response.status).toBe(200)
+    expect(body.data.workspace).toEqual(workspace)
+    expect(gateway.getBootstrap).toHaveBeenCalledWith(claims)
+    expect(JSON.stringify(body)).not.toContain(claims.sessionId)
+  })
+
+  it('keeps the session usable when the workspace fast path is unavailable', async () => {
+    const gateway = {
+      exchangeAccessCode: vi.fn().mockResolvedValue(claims),
+      getBootstrap: vi.fn().mockRejectedValue(new Error('temporary bootstrap failure')),
+    }
+    const handler = createFaSessionHandler(gateway, signingSecret)
+
+    const response = await handler.fetch(post({
+      groupId: claims.groupId,
+      accessCode: '1550',
+    }))
+    const body = await response.json() as { data: Record<string, unknown> }
+
+    expect(response.status).toBe(200)
+    expect(body.data).toEqual({
+      meetingId: claims.meetingId,
+      groupId: claims.groupId,
+      expiresAt: claims.expiresAt,
+    })
   })
 
   it('returns one generic denial without leaking the submitted code', async () => {

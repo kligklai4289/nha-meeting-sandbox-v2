@@ -27,7 +27,6 @@ const responseEnvelope = <T extends z.ZodType>(data: T) => z.object({
   requestId: z.string(),
 })
 
-export const faSessionResponseSchema = responseEnvelope(faSessionDataSchema)
 export const faIssueMutationResponseSchema = responseEnvelope(faIssueSchema).extend({
   replayed: z.boolean(),
 })
@@ -56,11 +55,18 @@ export const faGroupSchema = z.object({
   updatedAt: z.iso.datetime({ offset: true }),
 })
 
-export const faBootstrapResponseSchema = responseEnvelope(z.object({
+export const faBootstrapDataSchema = z.object({
   meeting: publicMeetingSchema.omit({ groups: true }),
   group: faGroupSchema,
   issues: z.array(faIssueSchema),
-}))
+})
+
+export type FaBootstrapData = z.infer<typeof faBootstrapDataSchema>
+
+export const faSessionResponseSchema = responseEnvelope(
+  faSessionDataSchema.extend({ workspace: faBootstrapDataSchema.optional() }),
+)
+export const faBootstrapResponseSchema = responseEnvelope(faBootstrapDataSchema)
 
 export const faGroupMutationResponseSchema = responseEnvelope(z.object({
   id: z.uuid(),

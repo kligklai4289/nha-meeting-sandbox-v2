@@ -122,29 +122,33 @@ export class SupabaseFaGateway implements FaSessionGateway, FaBootstrapGateway {
     if (session.meeting_id !== claims.meetingId || session.group_id !== claims.groupId) return null
     if (Date.parse(session.expires_at) <= this.now().getTime()) return null
 
-    const { data: meeting, error: meetingError } = await this.client
-      .from('meetings')
-      .select('id,title,fiscal_year,meeting_date,starts_at,ends_at,location,status,created_at,updated_at')
-      .eq('id', claims.meetingId)
-      .eq('status', 'active')
-      .maybeSingle()
+    const [
+      { data: meeting, error: meetingError },
+      { data: group, error: groupError },
+      { data: issues, error: issueError },
+    ] = await Promise.all([
+      this.client
+        .from('meetings')
+        .select('id,title,fiscal_year,meeting_date,starts_at,ends_at,location,status,created_at,updated_at')
+        .eq('id', claims.meetingId)
+        .eq('status', 'active')
+        .maybeSingle(),
+      this.client
+        .from('meeting_groups')
+        .select('id,meeting_id,group_no,name,scope,presenter,status,row_version,finalized_at,created_at,updated_at')
+        .eq('id', claims.groupId)
+        .eq('meeting_id', claims.meetingId)
+        .maybeSingle(),
+      this.client
+        .from('issues')
+        .select('id,group_id,position,topic,findings,proposal,action_plan,evaluation,stakeholder_roles,row_version,created_at,updated_at')
+        .eq('meeting_id', claims.meetingId)
+        .eq('group_id', claims.groupId)
+        .is('deleted_at', null)
+        .order('position', { ascending: true }),
+    ])
     if (meetingError || !meeting) return null
-
-    const { data: group, error: groupError } = await this.client
-      .from('meeting_groups')
-      .select('id,meeting_id,group_no,name,scope,presenter,status,row_version,finalized_at,created_at,updated_at')
-      .eq('id', claims.groupId)
-      .eq('meeting_id', claims.meetingId)
-      .maybeSingle()
     if (groupError || !group) return null
-
-    const { data: issues, error: issueError } = await this.client
-      .from('issues')
-      .select('id,group_id,position,topic,findings,proposal,action_plan,evaluation,stakeholder_roles,row_version,created_at,updated_at')
-      .eq('meeting_id', claims.meetingId)
-      .eq('group_id', claims.groupId)
-      .is('deleted_at', null)
-      .order('position', { ascending: true })
     if (issueError || !issues) return null
 
     return {

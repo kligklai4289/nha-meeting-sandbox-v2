@@ -2,6 +2,7 @@ import type { Issue } from '../domain/issue'
 import type { MeetingGroup } from '../domain/group'
 import type { FaRepository } from './faRepository'
 import {
+  type FaBootstrapData,
   faBootstrapResponseSchema,
   faDeleteMutationResponseSchema,
   faGroupMutationResponseSchema,
@@ -51,6 +52,7 @@ function mutationBody(issue: Issue, mutationId: string): Record<string, unknown>
 export class HttpFaRepository implements FaRepository {
   private readonly fetcher: Fetcher
   private readonly createMutationId: () => string
+  private bootstrapCache: FaBootstrapData | null = null
 
   constructor(
     fetcher: Fetcher = (input, init) => globalThis.fetch(input, init),
@@ -90,12 +92,15 @@ export class HttpFaRepository implements FaRepository {
   }
 
   async createSession(groupId: string, accessCode: string) {
+    this.bootstrapCache = null
     const body = await this.send('/api/fa/session', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ groupId, accessCode }),
     })
-    return faSessionResponseSchema.parse(body).data
+    const { workspace, ...session } = faSessionResponseSchema.parse(body).data
+    this.bootstrapCache = workspace ?? null
+    return session
   }
 
   async upsertIssue(issue: Issue, mutationId = this.createMutationId()): Promise<Issue> {
@@ -143,6 +148,11 @@ export class HttpFaRepository implements FaRepository {
   }
 
   async bootstrap() {
+    if (this.bootstrapCache) {
+      const cached = this.bootstrapCache
+      this.bootstrapCache = null
+      return cached
+    }
     const body = await this.send('/api/fa/bootstrap', { method: 'GET' })
     return faBootstrapResponseSchema.parse(body).data
   }

@@ -1,6 +1,10 @@
 import { z } from 'zod'
 import { json } from '../_lib/http.js'
-import { SupabaseFaGateway, type FaSessionGateway } from '../_lib/faAuthorization.js'
+import {
+  SupabaseFaGateway,
+  type FaBootstrapGateway,
+  type FaSessionGateway,
+} from '../_lib/faAuthorization.js'
 import { createFaSessionCookie, createFaSessionToken } from '../_lib/faSession.js'
 import { getRequestId } from '../_lib/request.js'
 import { parseServerEnv } from '../_lib/serverEnv.js'
@@ -18,9 +22,10 @@ function clientAddress(request: Request): string {
 }
 
 type Handler = { fetch(request: Request): Promise<Response> }
+type SessionGateway = FaSessionGateway & Partial<FaBootstrapGateway>
 
 export function createFaSessionHandler(
-  gateway: FaSessionGateway,
+  gateway: SessionGateway,
   signingSecret: string,
 ): Handler {
   return {
@@ -51,11 +56,18 @@ export function createFaSessionHandler(
           return json(401, { status: 'error', code: 'FA_ACCESS_DENIED', requestId }, requestId)
         }
         const token = createFaSessionToken(claims, signingSecret)
+        let workspace = null
+        try {
+          workspace = gateway.getBootstrap ? await gateway.getBootstrap(claims) : null
+        } catch {
+          // Session creation remains usable through the existing bootstrap fallback.
+        }
         return json(200, {
           data: {
             meetingId: claims.meetingId,
             groupId: claims.groupId,
             expiresAt: claims.expiresAt,
+            ...(workspace ? { workspace } : {}),
           },
           requestId,
         }, requestId, { 'set-cookie': createFaSessionCookie(token, claims.expiresAt) })

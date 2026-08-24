@@ -33,6 +33,17 @@ const group: MeetingGroup = {
   updatedAt: '2026-08-27T01:01:00.000Z',
 }
 
+const workspace = {
+  meeting: {
+    id: group.meetingId, title: 'การประชุม', fiscalYear: '2570',
+    meetingDate: '2026-08-27', startTime: '09:00', endTime: '16:30',
+    location: 'อยุธยา', status: 'active' as const, isActive: true,
+    createdAt: group.createdAt, updatedAt: group.updatedAt,
+  },
+  group,
+  issues: [issue],
+}
+
 function response(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -56,6 +67,44 @@ describe('HttpFaRepository', () => {
       method: 'POST', credentials: 'include', body: JSON.stringify({ groupId, accessCode }),
     }))
     expect(JSON.stringify(repository)).not.toContain(accessCode)
+  })
+
+  it('uses workspace data returned with the session without a second request', async () => {
+    const fetcher = vi.fn().mockResolvedValue(response(200, {
+      data: {
+        meetingId: group.meetingId,
+        groupId,
+        expiresAt: '2026-08-27T13:00:00.000Z',
+        workspace,
+      },
+      requestId: 'request-fast-path',
+    }))
+    const repository = new HttpFaRepository(fetcher)
+
+    await repository.createSession(groupId, '3515')
+    await expect(repository.bootstrap()).resolves.toEqual(workspace)
+
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    expect(fetcher).toHaveBeenCalledWith('/api/fa/session', expect.any(Object))
+  })
+
+  it('loads the existing bootstrap endpoint when session data has no workspace', async () => {
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(response(200, {
+        data: { meetingId: group.meetingId, groupId, expiresAt: '2026-08-27T13:00:00.000Z' },
+        requestId: 'request-session-fallback',
+      }))
+      .mockResolvedValueOnce(response(200, {
+        data: workspace,
+        requestId: 'request-bootstrap-fallback',
+      }))
+    const repository = new HttpFaRepository(fetcher)
+
+    await repository.createSession(groupId, '3515')
+    await expect(repository.bootstrap()).resolves.toEqual(workspace)
+
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(fetcher.mock.calls[1]?.[0]).toBe('/api/fa/bootstrap')
   })
 
   it('sends a new issue with zero version, zero-based position, and a stable mutation id', async () => {
@@ -124,19 +173,9 @@ describe('HttpFaRepository', () => {
   })
 
   it('loads Supabase offset timestamps from the session-bound bootstrap', async () => {
-    const data = {
-      meeting: {
-        id: group.meetingId, title: 'การประชุม', fiscalYear: '2570',
-        meetingDate: '2026-08-27', startTime: '09:00', endTime: '16:30',
-        location: 'อยุธยา', status: 'active' as const, isActive: true,
-        createdAt: group.createdAt, updatedAt: group.updatedAt,
-      },
-      group,
-      issues: [issue],
-    }
-    const fetcher = vi.fn().mockResolvedValue(response(200, { data, requestId: 'request-4' }))
+    const fetcher = vi.fn().mockResolvedValue(response(200, { data: workspace, requestId: 'request-4' }))
 
-    await expect(new HttpFaRepository(fetcher).bootstrap()).resolves.toEqual(data)
+    await expect(new HttpFaRepository(fetcher).bootstrap()).resolves.toEqual(workspace)
     expect(fetcher).toHaveBeenCalledWith('/api/fa/bootstrap', {
       method: 'GET', credentials: 'include',
     })

@@ -24,7 +24,7 @@ export class AdminAccessCodeService {
 
   constructor(
     client: SupabaseClient<Database>,
-    fetcher: Fetcher = fetch,
+    fetcher: Fetcher = (input, init) => globalThis.fetch(input, init),
   ) {
     this.client = client
     this.fetcher = fetcher

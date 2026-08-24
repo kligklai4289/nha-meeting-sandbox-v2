@@ -8,6 +8,7 @@ export interface Issue {
   actionPlan: string
   monitoring: string
   stakeholderRoles: string
+  rowVersion: number
   createdAt: string
   updatedAt: string
 }

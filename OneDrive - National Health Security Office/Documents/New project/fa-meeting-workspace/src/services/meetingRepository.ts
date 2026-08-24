@@ -10,5 +10,7 @@ export interface MeetingRepository {
   saveMeeting(meeting: Meeting): Promise<Meeting>
   saveGroup(group: MeetingGroup): Promise<MeetingGroup>
   saveIssues(groupId: string, issues: Issue[]): Promise<Issue[]>
+  saveGroupBundle(group: MeetingGroup, issues: Issue[]): Promise<{ group: MeetingGroup; issues: Issue[] }>
+  subscribe(meetingId: string, onChange: () => void): () => void
   reset(): Promise<void>
 }

@@ -14,6 +14,9 @@ import { PreviewPage } from '../pages/preview/PreviewPage'
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
 import { AdminGroupDetailPage } from '../pages/admin/AdminGroupDetailPage'
 import { AdminLoginPage } from '../pages/admin/AdminLoginPage'
+import { AdminForgotPasswordPage } from '../pages/admin/AdminForgotPasswordPage'
+import { AdminAuthConfirmPage } from '../pages/admin/AdminAuthConfirmPage'
+import { AdminUpdatePasswordPage } from '../pages/admin/AdminUpdatePasswordPage'
 import { AdminMeetingDetailPage } from '../pages/admin/AdminMeetingDetailPage'
 import { AdminMeetingsPage } from '../pages/admin/AdminMeetingsPage'
 import { AdminSettingsPage } from '../pages/admin/AdminSettingsPage'
@@ -30,6 +33,9 @@ const routes: RouteObject[] = [
     ],
   },
   { path: '/admin/login', element: <AdminLoginPage /> },
+  { path: '/admin/forgot-password', element: <AdminForgotPasswordPage /> },
+  { path: '/admin/auth/confirm', element: <AdminAuthConfirmPage /> },
+  { path: '/admin/update-password', element: <AdminUpdatePasswordPage /> },
   {
     element: <RequireAdminSession />,
     children: [

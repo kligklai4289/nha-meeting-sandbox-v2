@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MockMeetingRepository } from '../../services/mockMeetingRepository'
 import { renderWorkspaceWithSelectedGroup } from '../../test/renderWorkspace'
+import { FakeFaRepository } from '../../test/fakeFaRepository'
 
 describe('FAWorkspacePage', () => {
   beforeEach(() => sessionStorage.clear())
@@ -19,6 +20,16 @@ describe('FAWorkspacePage', () => {
       'href',
       '/fa',
     )
+  })
+
+  it('loads the session-bound workspace without the former mock warning', async () => {
+    const faRepository = new FakeFaRepository()
+    const bootstrap = vi.spyOn(faRepository, 'bootstrap')
+    renderWorkspaceWithSelectedGroup(undefined, undefined, undefined, faRepository)
+
+    expect(await screen.findByText('กลุ่ม 1 บริหารกองทุน เหมาจ่าย')).toBeVisible()
+    expect(bootstrap).toHaveBeenCalledTimes(1)
+    expect(screen.queryByText('ข้อมูลในหน้านี้ยังเป็นข้อมูลทดลองและยังไม่บันทึกลงระบบจริง')).not.toBeInTheDocument()
   })
 
   it('adds an issue and asks for confirmation before deletion', async () => {
@@ -53,8 +64,9 @@ describe('FAWorkspacePage', () => {
   it('does not start another autosave after updating only its own status', async () => {
     vi.useFakeTimers()
     const repository = new MockMeetingRepository()
-    const saveGroup = vi.spyOn(repository, 'saveGroup')
-    renderWorkspaceWithSelectedGroup(undefined, repository)
+    const faRepository = new FakeFaRepository()
+    const saveGroup = vi.spyOn(faRepository, 'saveGroup')
+    renderWorkspaceWithSelectedGroup(undefined, repository, undefined, faRepository)
 
     await act(() => vi.runOnlyPendingTimersAsync())
     fireEvent.change(screen.getByLabelText('ผู้นำเสนอ'), {
@@ -65,5 +77,15 @@ describe('FAWorkspacePage', () => {
     await act(() => vi.advanceTimersByTimeAsync(1500))
 
     expect(saveGroup).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not allow Final while edited data is waiting to save', async () => {
+    vi.useFakeTimers()
+    renderWorkspaceWithSelectedGroup()
+    await act(() => vi.runOnlyPendingTimersAsync())
+
+    fireEvent.change(screen.getAllByLabelText('ประเด็น')[0], { target: { value: 'กำลังแก้ไข' } })
+
+    expect(screen.getByRole('button', { name: 'ยืนยัน Final' })).toBeDisabled()
   })
 })

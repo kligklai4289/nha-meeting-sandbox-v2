@@ -31,9 +31,9 @@ export function AdminGroupDetailPage() {
   if (!group) return <main className="p-8">กำลังโหลดข้อมูลกลุ่ม...</main>
   const saveAll = async () => {
     const now = new Date().toISOString()
-    const savedGroup = await repository.saveGroup({ ...group, updatedAt: now })
-    await repository.saveIssues(group.id, editor.issues)
-    setGroup(savedGroup)
+    const result = await repository.saveGroupBundle({ ...group, updatedAt: now }, editor.issues)
+    setGroup(result.group)
+    dispatch({ type: 'replaceAll', issues: result.issues })
     setSaved(true)
   }
   const reopen = async () => {

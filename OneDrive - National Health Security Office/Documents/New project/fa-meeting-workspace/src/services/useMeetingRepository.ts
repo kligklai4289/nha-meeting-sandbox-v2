@@ -3,5 +3,7 @@ import type { MeetingRepository } from './meetingRepository'
 import { RepositoryContext } from './repositoryContextValue'
 
 export function useMeetingRepository(): MeetingRepository {
-  return useContext(RepositoryContext)
+  const repository = useContext(RepositoryContext)
+  if (!repository) throw new Error('MeetingRepositoryProvider is required')
+  return repository
 }

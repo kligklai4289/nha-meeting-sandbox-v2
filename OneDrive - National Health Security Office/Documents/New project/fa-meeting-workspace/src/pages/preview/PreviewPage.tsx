@@ -15,6 +15,16 @@ interface PreviewData {
   issues: Issue[]
 }
 
+const previewMockModeBanner = (
+  <div
+    role="status"
+    aria-label="ประกาศโหมดข้อมูลทดลองสำหรับ Preview"
+    className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-950"
+  >
+    Preview นี้สร้างจากข้อมูลจำลองที่เก็บในเครื่อง และยังไม่ใช่ข้อมูลที่บันทึกใน Supabase จริง
+  </div>
+)
+
 export function PreviewPage() {
   const repository = useMeetingRepository()
   const { selectedGroupId } = useSelectedGroup()
@@ -63,6 +73,7 @@ export function PreviewPage() {
   const issue = data.issues.find((candidate) => candidate.id === slide.issueId)
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      {previewMockModeBanner}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-bold text-blue-700">ตัวอย่างสรุปก่อน Export</p>

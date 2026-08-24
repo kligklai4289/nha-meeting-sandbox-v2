@@ -1,5 +1,8 @@
 import { ArrowLeft, BarChart3, CalendarDays, FileDown, Settings } from 'lucide-react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Button } from '../components/common/Button'
+import { useAdminAuth } from '../services/useAdminAuth'
 import { cn } from '../utils/cn'
 
 const links = [
@@ -10,12 +13,29 @@ const links = [
 ]
 
 export function AdminLayout() {
+  const auth = useAdminAuth()
+  const navigate = useNavigate()
+  const [signingOut, setSigningOut] = useState(false)
+  const email = auth.status === 'active-admin' ? auth.identity.email : ''
+
+  const signOut = async () => {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await auth.signOut()
+      navigate('/admin/login', { replace: true })
+    } catch {
+      setSigningOut(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f6f8fc] lg:grid lg:grid-cols-[17rem_1fr]">
       <aside className="bg-government-navy px-4 py-5 text-white lg:min-h-screen">
         <div className="mb-5 px-3">
           <p className="text-lg font-bold">FA Workspace 2570</p>
           <p className="text-xs text-blue-100">สำหรับผู้ดูแลระบบ</p>
+          <p className="mt-3 text-sm font-semibold text-blue-100">{email}</p>
         </div>
         <nav aria-label="เมนูผู้ดูแล" className="flex gap-2 overflow-x-auto lg:flex-col">
           {links.map(({ to, label, icon: Icon }) => (
@@ -41,8 +61,18 @@ export function AdminLayout() {
           <ArrowLeft size={18} aria-hidden="true" />
           กลับไปหน้าบันทึกข้อมูล
         </Link>
+        <Button
+          variant="secondary"
+          className="mt-3 w-full"
+          disabled={signingOut}
+          onClick={() => void signOut()}
+        >
+          ออกจากระบบ
+        </Button>
       </aside>
-      <Outlet />
+      <div className="min-w-0">
+        <Outlet />
+      </div>
     </div>
   )
 }

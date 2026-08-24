@@ -2,11 +2,12 @@ import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { MeetingGroup } from '../../domain/group'
 import { AutoSaveStatus } from './AutoSaveStatus'
+import type { FaAutosaveState } from '../../hooks/useFaAutosave'
 
 interface FAHeaderProps {
   group: MeetingGroup
   onBack: () => void
-  autoSaveState: 'idle' | 'saving' | 'saved' | 'error'
+  autoSaveState: FaAutosaveState
   savedAt: string | null
 }
 

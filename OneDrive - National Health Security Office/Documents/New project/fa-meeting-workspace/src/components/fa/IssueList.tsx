@@ -13,6 +13,7 @@ interface IssueListProps {
   onMoveDown: (issueId: string) => void
   onDelete: (issueId: string) => void
   disabled?: boolean
+  reorderDisabled?: boolean
 }
 
 export function IssueList(props: IssueListProps) {
@@ -29,6 +30,7 @@ export function IssueList(props: IssueListProps) {
           onMoveDown={props.onMoveDown}
           onDelete={props.onDelete}
           disabled={props.disabled}
+          reorderDisabled={props.reorderDisabled}
         />
       ))}
     </div>

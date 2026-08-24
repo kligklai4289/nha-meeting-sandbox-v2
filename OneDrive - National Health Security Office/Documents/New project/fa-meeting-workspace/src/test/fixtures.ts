@@ -4,6 +4,10 @@ const seed = createMockSeed()
 
 export const mockMeeting = structuredClone(seed.meeting)
 export const mockGroups = structuredClone(seed.groups)
+export const mockMeetingWithGroups = {
+  ...structuredClone(mockMeeting),
+  groups: structuredClone(mockGroups),
+}
 export const mockIssuesByGroup = Object.fromEntries(
   seed.groups.map((group) => [
     group.id,

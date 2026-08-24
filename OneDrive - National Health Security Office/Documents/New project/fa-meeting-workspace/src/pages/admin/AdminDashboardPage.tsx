@@ -1,14 +1,14 @@
 import { ArrowRight, CheckCircle2, Clock3, FileSpreadsheet, Layers3, ListChecks, Presentation } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GroupStatusTable } from '../../components/admin/GroupStatusTable'
 import { StatCard } from '../../components/admin/StatCard'
-import { Button } from '../../components/common/Button'
 import type { MeetingGroup } from '../../domain/group'
 import type { Issue } from '../../domain/issue'
 import { buildDashboardStats } from '../../features/admin/buildDashboardStats'
 import { useMeetingRepository } from '../../services/useMeetingRepository'
 import { formatBangkokTime } from '../../utils/dateTime'
+import { useRealtimeMeeting } from '../../hooks/useRealtimeMeeting'
 
 interface DashboardData {
   groups: MeetingGroup[]
@@ -18,20 +18,23 @@ interface DashboardData {
 export function AdminDashboardPage() {
   const repository = useMeetingRepository()
   const [data, setData] = useState<DashboardData>()
-  const [exportFeedback, setExportFeedback] = useState<string | null>(null)
-  useEffect(() => {
-    let active = true
-    repository.getActiveMeeting().then(async (meeting) => {
-      if (!meeting || !active) return
-      const issueLists = await Promise.all(meeting.groups.map((group) => repository.getIssues(group.id)))
-      if (!active) return
-      setData({
-        groups: meeting.groups,
-        issuesByGroup: Object.fromEntries(meeting.groups.map((group, index) => [group.id, issueLists[index]])),
-      })
+  const [meetingId, setMeetingId] = useState<string | null>(null)
+  const load = useCallback(async () => {
+    const meeting = await repository.getActiveMeeting()
+    if (!meeting) return
+    const issueLists = await Promise.all(meeting.groups.map((group) => repository.getIssues(group.id)))
+    setMeetingId(meeting.id)
+    setData({
+      groups: meeting.groups,
+      issuesByGroup: Object.fromEntries(meeting.groups.map((group, index) => [group.id, issueLists[index]])),
     })
-    return () => { active = false }
   }, [repository])
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void load() }, 0)
+    return () => window.clearTimeout(timer)
+  }, [load])
+  const refresh = useCallback(() => { void load() }, [load])
+  useRealtimeMeeting(repository, meetingId, refresh)
 
   if (!data) return <main className="p-8">กำลังโหลด Dashboard...</main>
   const stats = buildDashboardStats(data.groups, data.issuesByGroup)
@@ -48,35 +51,24 @@ export function AdminDashboardPage() {
       <section className="mt-8 overflow-hidden rounded-2xl bg-government-navy text-white shadow-sm">
         <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <p className="text-sm font-bold text-blue-200">ส่งออกรายงาน — โหมดทดลอง</p>
+            <p className="text-sm font-bold text-blue-200">ส่งออกรายงาน</p>
             <h2 className="mt-1 text-xl font-black">สรุปข้อมูลทั้ง {stats.totalGroups} กลุ่ม</h2>
             <p className="mt-2 max-w-2xl text-sm text-blue-100">
-              ปุ่มนี้ใช้สาธิตขั้นตอนการ Export เท่านั้น และยังไม่สร้างไฟล์ดาวน์โหลดจริง
+              ดาวน์โหลด Excel หรือ PowerPoint จากข้อมูลล่าสุดผ่าน Export Center
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setExportFeedback('โหมดทดลอง: ยังไม่มีไฟล์ Excel ให้ดาวน์โหลด')}
-            >
+            <Link to="/admin/export" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800">
               <FileSpreadsheet aria-hidden="true" size={18} />
-              ทดลอง Export Excel
-            </Button>
-            <Button
-              variant="success"
-              onClick={() => setExportFeedback('โหมดทดลอง: ยังไม่มีไฟล์ PowerPoint ให้ดาวน์โหลด')}
-            >
+              Export Excel
+            </Link>
+            <Link to="/admin/export" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white">
               <Presentation aria-hidden="true" size={18} />
-              ทดลอง Export PowerPoint
-            </Button>
+              Export PowerPoint
+            </Link>
           </div>
         </div>
         <div className="border-t border-white/15 bg-black/10 px-6 py-4">
-          {exportFeedback && (
-            <p role="status" className="mb-3 rounded-xl bg-white/10 px-4 py-3 text-sm font-bold text-blue-50">
-              {exportFeedback}
-            </p>
-          )}
           <Link
             to="/admin/export"
             className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white underline decoration-blue-300 underline-offset-4"

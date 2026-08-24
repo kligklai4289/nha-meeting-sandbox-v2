@@ -8,6 +8,7 @@ export interface MeetingGroup {
   groupDescription: string
   presenter: string
   status: GroupStatus
+  rowVersion: number
   finalizedAt: string | null
   createdAt: string
   updatedAt: string

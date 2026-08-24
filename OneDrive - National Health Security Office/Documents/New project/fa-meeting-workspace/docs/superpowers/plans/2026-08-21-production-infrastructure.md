@@ -25,7 +25,7 @@
 
 ## File Map
 
-- `package.json`, `package-lock.json` — add Zod, Supabase client types, Vercel Function types, and Supabase CLI.
+- `package.json`, `package-lock.json` — add Zod, Supabase client, and Supabase CLI with pinned lockfile versions.
 - `tsconfig.json`, `tsconfig.api.json` — type-check browser and server code as separate TypeScript projects.
 - `.env.example` — document public and server-only environment names without values.
 - `.gitignore` — ignore local Supabase links, generated temporary project metadata, and environment secrets.
@@ -101,7 +101,7 @@ Expected: FAIL because `src/config/publicEnv.ts` does not exist.
 - [ ] **Step 3: Install dependencies and implement the public parser**
 
 Run: `npm install zod @supabase/supabase-js`  
-Run: `npm install --save-dev @vercel/node supabase`
+Run: `npm install --save-dev supabase`
 
 ```ts
 import { z } from 'zod'
@@ -448,7 +448,7 @@ git commit -m "feat: add the Vercel API health boundary"
 
 - [ ] **Step 1: Write the executable verification fixture test**
 
-Create temporary fixture directories in the test, run the script through Node, and assert a clean fixture exits 0 while a fixture containing `SUPABASE_SECRET_KEY=sb_secret_leaked-value` exits non-zero with `Potential server secret found`. The assertion must inspect process exit/output, not source text.
+Create temporary fixture directories in the test, construct a non-placeholder `sb_secret_...` value at runtime, run the script through Node, and assert a clean fixture exits 0 while the leak fixture exits non-zero with `Potential server secret found`. The assertion must inspect process exit/output, not source text.
 
 - [ ] **Step 2: Run the verification test and verify RED**
 

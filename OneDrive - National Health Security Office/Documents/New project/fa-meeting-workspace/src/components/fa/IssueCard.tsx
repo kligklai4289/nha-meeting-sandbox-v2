@@ -17,6 +17,7 @@ interface IssueCardProps {
   onMoveDown: (issueId: string) => void
   onDelete: (issueId: string) => void
   disabled?: boolean
+  reorderDisabled?: boolean
 }
 
 const longFields: EditableField[] = [
@@ -36,6 +37,7 @@ export function IssueCard({
   onMoveDown,
   onDelete,
   disabled = false,
+  reorderDisabled = false,
 }: IssueCardProps) {
   const titleId = `issue-title-${issue.id}`
   return (
@@ -49,10 +51,10 @@ export function IssueCard({
           ประเด็นที่ {issue.sortOrder}
         </h3>
         <div className="flex gap-2">
-          <Button variant="ghost" aria-label="เลื่อนประเด็นขึ้น" disabled={disabled || isFirst} onClick={() => onMoveUp(issue.id)}>
+          <Button variant="ghost" aria-label="เลื่อนประเด็นขึ้น" disabled={disabled || reorderDisabled || isFirst} onClick={() => onMoveUp(issue.id)}>
             <ArrowUp aria-hidden="true" size={17} />
           </Button>
-          <Button variant="ghost" aria-label="เลื่อนประเด็นลง" disabled={disabled || isLast} onClick={() => onMoveDown(issue.id)}>
+          <Button variant="ghost" aria-label="เลื่อนประเด็นลง" disabled={disabled || reorderDisabled || isLast} onClick={() => onMoveDown(issue.id)}>
             <ArrowDown aria-hidden="true" size={17} />
           </Button>
           <Button variant="ghost" aria-label="ลบประเด็น" disabled={disabled} onClick={() => onDelete(issue.id)}>

@@ -42,6 +42,7 @@ function createIssue(groupId: string, sortOrder: number): Issue {
     actionPlan: 'ตัวอย่างแนวทางดำเนินงานและผู้รับผิดชอบ',
     monitoring: 'ตัวอย่างวิธีติดตามความก้าวหน้า',
     stakeholderRoles: 'ตัวอย่างบทบาทของหน่วยงานที่เกี่ยวข้อง',
+    rowVersion: 1,
     createdAt,
     updatedAt: createdAt,
   }
@@ -67,6 +68,7 @@ export function createMockSeed(): MockSeed {
     ...group,
     presenter: '',
     status: index === 1 ? 'final' : index === 2 ? 'review_ready' : 'draft',
+    rowVersion: 1,
     finalizedAt: index === 1 ? '2026-08-20T03:41:00.000Z' : null,
     createdAt,
     updatedAt: `2026-08-20T03:4${index + 1}:00.000Z`,

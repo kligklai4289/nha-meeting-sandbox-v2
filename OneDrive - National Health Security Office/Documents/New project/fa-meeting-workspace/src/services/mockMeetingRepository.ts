@@ -76,6 +76,16 @@ export class MockMeetingRepository implements MeetingRepository {
     return structuredClone(issues)
   }
 
+  async saveGroupBundle(group: MeetingGroup, issues: Issue[]) {
+    const savedGroup = await this.saveGroup(group)
+    const savedIssues = await this.saveIssues(group.id, issues)
+    return { group: savedGroup, issues: savedIssues }
+  }
+
+  subscribe(): () => void {
+    return () => undefined
+  }
+
   async reset(): Promise<void> {
     this.state = createMockSeed()
     this.persist()

@@ -1,7 +1,8 @@
 import { Check, Cloud, LoaderCircle, WifiOff } from 'lucide-react'
+import type { FaAutosaveState } from '../../hooks/useFaAutosave'
 
 interface AutoSaveStatusProps {
-  state: 'idle' | 'saving' | 'saved' | 'error'
+  state: FaAutosaveState
   savedAt: string | null
 }
 
@@ -19,8 +20,10 @@ export function AutoSaveStatus({ state, savedAt }: AutoSaveStatusProps) {
     }).format(new Date(savedAt))
     return <><Check aria-hidden="true" size={16} /> บันทึกแล้ว {time}</>
   }
-  if (state === 'error') {
+  if (state === 'unsynced') {
     return <><WifiOff aria-hidden="true" size={16} /> ยังไม่ได้ Sync</>
   }
+  if (state === 'conflict') return <><WifiOff aria-hidden="true" size={16} /> พบข้อมูลชนกัน</>
+  if (state === 'error') return <><WifiOff aria-hidden="true" size={16} /> บันทึกไม่สำเร็จ</>
   return <><Cloud aria-hidden="true" size={16} /> พร้อมบันทึกอัตโนมัติ</>
 }

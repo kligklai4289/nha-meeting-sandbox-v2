@@ -27,3 +27,6 @@ output/playwright
 .vercel
 .env.local
 .env.*.local
+.supabase-projects.local.json
+supabase/.branches
+supabase/.temp

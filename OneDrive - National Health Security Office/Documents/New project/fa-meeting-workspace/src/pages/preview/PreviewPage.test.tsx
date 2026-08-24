@@ -13,6 +13,18 @@ describe('PreviewPage', () => {
     )
   })
 
+  it('discloses that Preview uses local mock data', async () => {
+    renderAppAt('/preview')
+
+    expect(
+      await screen.findByRole('status', {
+        name: 'ประกาศโหมดข้อมูลทดลองสำหรับ Preview',
+      }),
+    ).toHaveTextContent(
+      'Preview นี้สร้างจากข้อมูลจำลองที่เก็บในเครื่อง และยังไม่ใช่ข้อมูลที่บันทึกใน Supabase จริง',
+    )
+  })
+
   it('navigates from the cover through issue slides', async () => {
     const user = userEvent.setup()
     renderAppAt('/preview')

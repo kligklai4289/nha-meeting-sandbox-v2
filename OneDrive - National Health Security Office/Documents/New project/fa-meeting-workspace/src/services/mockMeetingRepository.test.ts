@@ -14,6 +14,12 @@ describe('MockMeetingRepository', () => {
     expect(meeting?.groups[2].groupName).toBe(
       'งานคุ้มครองสิทธิ ม.57, ม.59, การป้องกันเกิดซ้ำ (RCA)',
     )
+
+    const group = await repository.getGroup('10000000-0000-4000-8000-000000000001')
+    expect(group).toMatchObject({
+      id: '10000000-0000-4000-8000-000000000001',
+      rowVersion: 1,
+    })
   })
 
   it('returns isolated copies so callers cannot mutate repository state', async () => {

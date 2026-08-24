@@ -1,0 +1,3 @@
+alter table public.meeting_groups
+rename constraint meeting_groups_meeting_id_group_no_key
+to meeting_groups_meeting_group_no_key;

@@ -14,6 +14,7 @@ export type IssueEditorAction =
   | { type: 'confirmDelete' }
   | { type: 'cancelDelete' }
   | { type: 'replaceAll'; issues: Issue[] }
+  | { type: 'acceptSaved'; saved: Issue; submittedUpdatedAt: string }
 
 function normalize(issues: Issue[]): Issue[] {
   return issues.map((issue, index) => ({ ...issue, sortOrder: index + 1 }))
@@ -45,6 +46,7 @@ export function issueEditorReducer(
         actionPlan: '',
         monitoring: '',
         stakeholderRoles: '',
+        rowVersion: 0,
         createdAt: now,
         updatedAt: now,
       }
@@ -78,5 +80,14 @@ export function issueEditorReducer(
       return { ...state, pendingDeleteId: null }
     case 'replaceAll':
       return { issues: normalize(action.issues), pendingDeleteId: null }
+    case 'acceptSaved':
+      return {
+        ...state,
+        issues: state.issues.map((issue) => {
+          if (issue.id !== action.saved.id) return issue
+          if (issue.updatedAt === action.submittedUpdatedAt) return action.saved
+          return { ...issue, rowVersion: action.saved.rowVersion, createdAt: action.saved.createdAt }
+        }),
+      }
   }
 }

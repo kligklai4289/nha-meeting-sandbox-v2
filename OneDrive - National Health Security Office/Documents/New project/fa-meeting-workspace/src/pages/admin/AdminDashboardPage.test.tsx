@@ -1,26 +1,69 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { AdminAuthError } from '../../services/auth/adminAuth'
 import { MockMeetingRepository } from '../../services/mockMeetingRepository'
+import { activeAdminIdentity, FakeAdminAuth } from '../../test/fakeAdminAuth'
 import { renderAppAt } from '../../test/renderApp'
 
 describe('Admin workflow', () => {
   beforeEach(() => sessionStorage.clear())
 
-  it('labels mock authentication and redirects a valid mock login to Dashboard', async () => {
+  it('normalizes credentials and signs in an anonymous administrator', async () => {
     const user = userEvent.setup()
-    renderAppAt('/admin/login')
+    const repository = new MockMeetingRepository()
+    const auth = new FakeAdminAuth(null)
+    renderAppAt('/admin/login', repository, undefined, auth)
 
-    expect(
-      screen.getByText('โหมดตัวอย่าง — ยังไม่เชื่อม Supabase Auth'),
-    ).toBeInTheDocument()
-    await user.type(screen.getByLabelText('อีเมล'), 'admin@example.org')
-    await user.type(screen.getByLabelText('รหัสผ่าน'), 'demo')
+    await user.type(screen.getByLabelText('อีเมล'), ' PICHAILAKARM@GMAIL.COM ')
+    await user.type(screen.getByLabelText('รหัสผ่าน'), 'correct-password')
     await user.click(screen.getByRole('button', { name: 'เข้าสู่ระบบ' }))
 
+    expect(auth.signIn).toHaveBeenCalledWith(
+      'pichailakarm@gmail.com',
+      'correct-password',
+    )
     expect(
       await screen.findByRole('heading', { name: 'Admin Dashboard' }),
     ).toBeInTheDocument()
+  })
+
+  it('keeps the login submit unavailable while authentication is in progress', async () => {
+    const user = userEvent.setup()
+    const auth = new FakeAdminAuth(null)
+    let finishSignIn: ((identity: typeof activeAdminIdentity) => void) | undefined
+    auth.signIn.mockImplementation(
+      () => new Promise((resolve) => { finishSignIn = resolve }),
+    )
+    renderAppAt('/admin/login', undefined, undefined, auth)
+
+    await user.type(screen.getByLabelText('อีเมล'), 'admin@example.org')
+    await user.type(screen.getByLabelText('รหัสผ่าน'), 'correct-password')
+    await user.click(screen.getByRole('button', { name: 'เข้าสู่ระบบ' }))
+
+    expect(screen.getByRole('button', { name: 'กำลังเข้าสู่ระบบ...' })).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'กำลังเข้าสู่ระบบ...' }))
+    expect(auth.signIn).toHaveBeenCalledTimes(1)
+
+    finishSignIn?.(activeAdminIdentity)
+    expect(await screen.findByRole('heading', { name: 'Admin Dashboard' })).toBeInTheDocument()
+  })
+
+  it('shows a generic login error without provider diagnostics', async () => {
+    const user = userEvent.setup()
+    const auth = new FakeAdminAuth(null)
+    auth.signIn.mockRejectedValue(new AdminAuthError('INVALID_CREDENTIALS'))
+    renderAppAt('/admin/login', undefined, undefined, auth)
+
+    await user.type(screen.getByLabelText('อีเมล'), 'admin@example.org')
+    await user.type(screen.getByLabelText('รหัสผ่าน'), 'correct-password')
+    await user.click(screen.getByRole('button', { name: 'เข้าสู่ระบบ' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'ไม่สามารถเข้าสู่ระบบได้ กรุณาตรวจสอบอีเมล รหัสผ่าน และสิทธิ์ผู้ดูแล',
+    )
+    expect(screen.queryByText('Admin authentication failed')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('รหัสผ่าน')).toHaveValue('')
   })
 
   it('shows all groups and reopens a Final group from its detail page', async () => {
@@ -45,22 +88,12 @@ describe('Admin workflow', () => {
     expect((await repository.getGroup('10000000-0000-4000-8000-000000000002'))?.status).toBe('draft')
   })
 
-  it('offers mock export actions from the Dashboard without claiming a download', async () => {
-    const user = userEvent.setup()
+  it('links real export actions to the Export Center', async () => {
     sessionStorage.setItem('admin:mock-session', 'true')
     renderAppAt('/admin/dashboard', new MockMeetingRepository())
 
-    await user.click(await screen.findByRole('button', { name: 'ทดลอง Export Excel' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'โหมดทดลอง: ยังไม่มีไฟล์ Excel ให้ดาวน์โหลด',
-    )
-    await user.click(
-      screen.getByRole('button', { name: 'ทดลอง Export PowerPoint' }),
-    )
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'โหมดทดลอง: ยังไม่มีไฟล์ PowerPoint ให้ดาวน์โหลด',
-    )
+    expect(await screen.findByRole('link', { name: 'Export Excel' })).toHaveAttribute('href', '/admin/export')
+    expect(screen.getByRole('link', { name: 'Export PowerPoint' })).toHaveAttribute('href', '/admin/export')
     expect(
       screen.getByRole('link', { name: 'ดูตัวเลือก Export รายกลุ่ม' }),
     ).toHaveAttribute('href', '/admin/export')

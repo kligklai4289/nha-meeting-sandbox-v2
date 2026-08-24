@@ -57,6 +57,7 @@ export function createMockSeed(): MockSeed {
     startTime: '09:00',
     endTime: '16:30',
     location: 'โรงแรมกรุงศรีริเวอร์ จังหวัดพระนครศรีอยุธยา',
+    status: 'active',
     isActive: true,
     createdAt,
     updatedAt: createdAt,

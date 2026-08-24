@@ -128,7 +128,7 @@ describe('HttpFaRepository', () => {
       meeting: {
         id: group.meetingId, title: 'การประชุม', fiscalYear: '2570',
         meetingDate: '2026-08-27', startTime: '09:00', endTime: '16:30',
-        location: 'อยุธยา', isActive: true,
+        location: 'อยุธยา', status: 'active' as const, isActive: true,
         createdAt: group.createdAt, updatedAt: group.updatedAt,
       },
       group,

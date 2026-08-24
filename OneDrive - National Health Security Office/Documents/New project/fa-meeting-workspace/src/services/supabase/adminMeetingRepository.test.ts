@@ -21,9 +21,14 @@ const issueRow = {
 function gateway(overrides: Partial<AdminMeetingGateway> = {}): AdminMeetingGateway {
   return {
     getActiveMeeting: vi.fn().mockResolvedValue(meetingRow),
+    getMeetings: vi.fn().mockResolvedValue([meetingRow]),
+    getMeeting: vi.fn().mockResolvedValue(meetingRow),
     getGroups: vi.fn().mockResolvedValue([groupRow]),
     getGroup: vi.fn().mockResolvedValue(groupRow),
     getIssues: vi.fn().mockResolvedValue([issueRow]),
+    createMeeting: vi.fn().mockResolvedValue({ ...meetingRow, status: 'draft' }),
+    setMeetingStatus: vi.fn().mockResolvedValue(meetingRow),
+    deleteDraftMeeting: vi.fn().mockResolvedValue(undefined),
     updateMeeting: vi.fn().mockResolvedValue({ ...meetingRow, title: 'แก้ไขแล้ว', row_version: 2 }),
     updateGroup: vi.fn().mockResolvedValue({ ...groupRow, status: 'draft', row_version: 2 }),
     saveGroupBundle: vi.fn().mockResolvedValue({ group: { ...groupRow, row_version: 2 }, issues: [issueRow] }),
@@ -39,8 +44,22 @@ describe('AdminMeetingRepository', () => {
       id: meetingRow.id,
       fiscalYear: '2569',
       isActive: true,
+      status: 'active',
       groups: [expect.objectContaining({ id: groupRow.id, groupNo: 1, groupName: 'กลุ่มหนึ่ง' })],
     }))
+  })
+
+  it('lists all rounds and delegates lifecycle operations', async () => {
+    const draftRow = { ...meetingRow, id: '00000000-0000-4000-8000-000000000002', status: 'draft' as const }
+    const data = gateway({ getMeetings: vi.fn().mockResolvedValue([meetingRow, draftRow]) })
+    const repository = new AdminMeetingRepository(data)
+
+    await expect(repository.listMeetings()).resolves.toHaveLength(2)
+    await repository.setMeetingStatus(draftRow.id, 'active')
+    await repository.deleteDraftMeeting(draftRow.id)
+
+    expect(data.setMeetingStatus).toHaveBeenCalledWith(draftRow.id, 'active')
+    expect(data.deleteDraftMeeting).toHaveBeenCalledWith(draftRow.id)
   })
 
   it('saves a group and its issues through one version-checked bundle call', async () => {

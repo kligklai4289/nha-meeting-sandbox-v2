@@ -72,6 +72,7 @@ export function mapPublicMeetingRows(
     startTime: normalizePostgresTime(meeting.starts_at),
     endTime: normalizePostgresTime(meeting.ends_at),
     location: meeting.location,
+    status: 'active',
     isActive: meeting.status === 'active',
     createdAt: meeting.created_at,
     updatedAt: meeting.updated_at,

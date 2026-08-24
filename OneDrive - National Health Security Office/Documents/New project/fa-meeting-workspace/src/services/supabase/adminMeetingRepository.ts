@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { MeetingGroup } from '../../domain/group'
 import type { Issue } from '../../domain/issue'
-import type { Meeting, MeetingWithGroups } from '../../domain/meeting'
+import type { Meeting, MeetingStatus, MeetingWithGroups, NewMeeting } from '../../domain/meeting'
 import type { MeetingRepository } from '../meetingRepository'
 import type { Database, Json, Tables } from './database.types'
 
@@ -11,9 +11,14 @@ type IssueRow = Tables<'issues'>
 
 export interface AdminMeetingGateway {
   getActiveMeeting(): Promise<MeetingRow | null>
+  getMeetings(): Promise<MeetingRow[]>
+  getMeeting(meetingId: string): Promise<MeetingRow | null>
   getGroups(meetingId: string): Promise<GroupRow[]>
   getGroup(groupId: string): Promise<GroupRow | null>
   getIssues(groupId: string): Promise<IssueRow[]>
+  createMeeting(meeting: NewMeeting): Promise<MeetingRow>
+  setMeetingStatus(meetingId: string, status: Extract<MeetingStatus, 'active' | 'closed'>): Promise<MeetingRow>
+  deleteDraftMeeting(meetingId: string): Promise<void>
   updateMeeting(meeting: Meeting): Promise<MeetingRow>
   updateGroup(group: MeetingGroup): Promise<GroupRow>
   saveGroupBundle(group: MeetingGroup, issues: Issue[]): Promise<{ group: GroupRow; issues: IssueRow[] }>
@@ -29,6 +34,7 @@ function mapMeeting(row: MeetingRow): Meeting {
     startTime: row.starts_at.slice(0, 5),
     endTime: row.ends_at.slice(0, 5),
     location: row.location,
+    status: row.status,
     isActive: row.status === 'active',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -92,6 +98,18 @@ export class SupabaseAdminMeetingGateway implements AdminMeetingGateway {
     return data
   }
 
+  async getMeetings() {
+    const { data, error } = await this.client.from('meetings').select('*').order('meeting_date', { ascending: false }).order('created_at', { ascending: false })
+    if (error) throw new Error('ADMIN_DATA_UNAVAILABLE')
+    return data
+  }
+
+  async getMeeting(meetingId: string) {
+    const { data, error } = await this.client.from('meetings').select('*').eq('id', meetingId).maybeSingle()
+    if (error) throw new Error('ADMIN_DATA_UNAVAILABLE')
+    return data
+  }
+
   async getGroups(meetingId: string) {
     const { data, error } = await this.client.from('meeting_groups').select('*').eq('meeting_id', meetingId).order('group_no')
     if (error) throw new Error('ADMIN_DATA_UNAVAILABLE')
@@ -110,6 +128,36 @@ export class SupabaseAdminMeetingGateway implements AdminMeetingGateway {
     return data
   }
 
+  async createMeeting(meeting: NewMeeting) {
+    const rpc = this.client as unknown as RpcClient
+    const { data, error } = await rpc.rpc('admin_create_meeting', {
+      p_title: meeting.title,
+      p_fiscal_year: Number(meeting.fiscalYear),
+      p_meeting_date: meeting.meetingDate,
+      p_starts_at: meeting.startTime,
+      p_ends_at: meeting.endTime,
+      p_location: meeting.location,
+    })
+    if (error || !data || typeof data !== 'object') throw new Error('ADMIN_MEETING_CREATE_FAILED')
+    return data as MeetingRow
+  }
+
+  async setMeetingStatus(meetingId: string, status: Extract<MeetingStatus, 'active' | 'closed'>) {
+    const rpc = this.client as unknown as RpcClient
+    const { data, error } = await rpc.rpc('admin_set_meeting_status', {
+      p_meeting_id: meetingId,
+      p_status: status,
+    })
+    if (error || !data || typeof data !== 'object') throw new Error('ADMIN_MEETING_STATUS_FAILED')
+    return data as MeetingRow
+  }
+
+  async deleteDraftMeeting(meetingId: string) {
+    const rpc = this.client as unknown as RpcClient
+    const { data, error } = await rpc.rpc('admin_delete_draft_meeting', { p_meeting_id: meetingId })
+    if (error || data !== meetingId) throw new Error('ADMIN_MEETING_DELETE_FAILED')
+  }
+
   async updateMeeting(meeting: Meeting) {
     const { data, error } = await this.client.from('meetings').update({
       title: meeting.title,
@@ -118,7 +166,6 @@ export class SupabaseAdminMeetingGateway implements AdminMeetingGateway {
       starts_at: meeting.startTime,
       ends_at: meeting.endTime,
       location: meeting.location,
-      status: meeting.isActive ? 'active' : 'draft',
     }).eq('id', meeting.id).eq('updated_at', meeting.updatedAt).select('*').maybeSingle()
     return ensure(data, error)
   }
@@ -186,6 +233,32 @@ export class AdminMeetingRepository implements MeetingRepository {
     if (!row) return null
     const groups = await this.gateway.getGroups(row.id)
     return { ...mapMeeting(row), groups: groups.map(mapGroup) }
+  }
+
+  private async withGroups(row: MeetingRow): Promise<MeetingWithGroups> {
+    const groups = await this.gateway.getGroups(row.id)
+    return { ...mapMeeting(row), groups: groups.map(mapGroup) }
+  }
+
+  async listMeetings() {
+    return Promise.all((await this.gateway.getMeetings()).map((row) => this.withGroups(row)))
+  }
+
+  async getMeeting(meetingId: string) {
+    const row = await this.gateway.getMeeting(meetingId)
+    return row ? this.withGroups(row) : null
+  }
+
+  async createMeeting(meeting: NewMeeting) {
+    return this.withGroups(await this.gateway.createMeeting(meeting))
+  }
+
+  async setMeetingStatus(meetingId: string, status: Extract<MeetingStatus, 'active' | 'closed'>) {
+    return mapMeeting(await this.gateway.setMeetingStatus(meetingId, status))
+  }
+
+  async deleteDraftMeeting(meetingId: string) {
+    await this.gateway.deleteDraftMeeting(meetingId)
   }
 
   async getGroup(groupId: string) {

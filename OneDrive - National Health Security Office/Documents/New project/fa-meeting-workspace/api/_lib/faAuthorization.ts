@@ -156,6 +156,7 @@ export class SupabaseFaGateway implements FaSessionGateway, FaBootstrapGateway {
         startTime: meeting.starts_at.slice(0, 5),
         endTime: meeting.ends_at.slice(0, 5),
         location: meeting.location,
+        status: 'active',
         isActive: true,
         createdAt: meeting.created_at,
         updatedAt: meeting.updated_at,

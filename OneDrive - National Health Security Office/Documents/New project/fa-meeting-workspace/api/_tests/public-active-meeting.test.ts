@@ -10,6 +10,7 @@ const meeting: MeetingWithGroups = {
   startTime: '09:00',
   endTime: '16:30',
   location: 'ห้องประชุม 1',
+  status: 'active',
   isActive: true,
   createdAt: '2026-08-20T08:00:00+00:00',
   updatedAt: '2026-08-21T09:30:00+00:00',

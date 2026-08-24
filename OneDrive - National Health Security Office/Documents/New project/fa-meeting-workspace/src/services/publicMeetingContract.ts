@@ -8,6 +8,7 @@ export const publicMeetingSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   location: z.string().min(1),
+  status: z.literal('active'),
   isActive: z.literal(true),
   createdAt: z.iso.datetime({ offset: true }),
   updatedAt: z.iso.datetime({ offset: true }),

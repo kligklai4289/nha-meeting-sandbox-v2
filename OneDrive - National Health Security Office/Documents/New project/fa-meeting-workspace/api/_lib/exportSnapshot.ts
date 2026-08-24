@@ -59,6 +59,7 @@ export class SupabaseExportGateway implements ExportGateway {
         startTime: meeting.starts_at.slice(0, 5),
         endTime: meeting.ends_at.slice(0, 5),
         location: meeting.location,
+        status: meeting.status,
         isActive: meeting.status === 'active',
         createdAt: meeting.created_at,
         updatedAt: meeting.updated_at,

@@ -18,8 +18,8 @@ export const faIssueSchema = z.object({
   monitoring: z.string(),
   stakeholderRoles: z.string(),
   rowVersion: z.number().int().positive(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
+  createdAt: z.iso.datetime({ offset: true }),
+  updatedAt: z.iso.datetime({ offset: true }),
 })
 
 const responseEnvelope = <T extends z.ZodType>(data: T) => z.object({
@@ -39,7 +39,7 @@ export const faDeleteMutationResponseSchema = responseEnvelope(z.object({
   groupId: z.uuid(),
   deleted: z.literal(true),
   rowVersion: z.number().int().positive(),
-  updatedAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime({ offset: true }),
 })).extend({ replayed: z.boolean() })
 
 export const faGroupSchema = z.object({

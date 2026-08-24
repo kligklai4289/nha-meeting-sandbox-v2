@@ -15,8 +15,8 @@ const issue: Issue = {
   monitoring: 'ติดตาม',
   stakeholderRoles: 'บทบาท',
   rowVersion: 3,
-  createdAt: '2026-08-27T01:00:00.000Z',
-  updatedAt: '2026-08-27T01:01:00.000Z',
+  createdAt: '2026-08-27T01:00:00.000+00:00',
+  updatedAt: '2026-08-27T01:01:00.000+00:00',
 }
 
 const group: MeetingGroup = {
@@ -123,7 +123,7 @@ describe('HttpFaRepository', () => {
     expect(String(error)).not.toContain('network secret details')
   })
 
-  it('loads the session-bound meeting, group, and issues from bootstrap', async () => {
+  it('loads Supabase offset timestamps from the session-bound bootstrap', async () => {
     const data = {
       meeting: {
         id: group.meetingId, title: 'การประชุม', fiscalYear: '2570',

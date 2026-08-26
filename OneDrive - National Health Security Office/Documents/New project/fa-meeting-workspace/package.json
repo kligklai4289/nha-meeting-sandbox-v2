@@ -1,0 +1,49 @@
+{
+  "name": "fa-meeting-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "oxlint",
+    "verify:environment": "node scripts/verify-environment.mjs",
+    "test": "vitest",
+    "test:run": "vitest run --maxWorkers=2 --testTimeout=15000",
+    "test:e2e": "node scripts/run-e2e.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.112.3",
+    "exceljs": "4.4.0",
+    "lucide-react": "^1.33.0",
+    "pptxgenjs": "4.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.5",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "jsdom": "^30.0.1",
+    "msw": "^2.15.0",
+    "oxlint": "^1.75.0",
+    "supabase": "2.115.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.11"
+  }
+}
